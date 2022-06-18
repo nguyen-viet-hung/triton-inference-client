@@ -153,6 +153,16 @@ ClientBackend::Create(
     std::unique_ptr<ClientBackend>* client_backend)
 {
   std::unique_ptr<ClientBackend> local_backend;
+  if (!trace_options.empty()){
+  // Temp, get rid of
+      std::unique_ptr<triton::client::InferenceServerHttpClient> http_client;
+      RETURN_IF_TRITON_ERROR(triton::client::InferenceServerHttpClient::Create(
+          &http_client, url, verbose));
+      std::string response;
+      RETURN_IF_TRITON_ERROR(
+          http_client->UpdateTraceSettings(
+              &response, "", trace_options));
+    }
   if (kind == TRITON) {
     RETURN_IF_CB_ERROR(tritonremote::TritonClientBackend::Create(
         url, protocol, ssl_options, trace_options,

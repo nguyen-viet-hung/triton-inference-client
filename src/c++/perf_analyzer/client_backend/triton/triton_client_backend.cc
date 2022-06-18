@@ -92,8 +92,7 @@ TritonClientBackend::Create(
 {
   std::unique_ptr<TritonClientBackend> triton_client_backend(
       new TritonClientBackend(protocol, compression_algorithm, http_headers));
-  // Temp, get rid of
-  {
+  if (protocol == ProtocolType::HTTP) {
     triton::client::HttpSslOptions http_ssl_options =
         ParseHttpSslOptions(ssl_options);
     RETURN_IF_TRITON_ERROR(tc::InferenceServerHttpClient::Create(
@@ -105,19 +104,6 @@ TritonClientBackend::Create(
           triton_client_backend->client_.http_client_->UpdateTraceSettings(
               &response, "", trace_options));
     }
-  }
-  if (protocol == ProtocolType::HTTP) {
-    triton::client::HttpSslOptions http_ssl_options =
-        ParseHttpSslOptions(ssl_options);
-    RETURN_IF_TRITON_ERROR(tc::InferenceServerHttpClient::Create(
-        &(triton_client_backend->client_.http_client_), url, verbose,
-        http_ssl_options));
-    // if (!trace_options.empty()) {
-    //   std::string response;
-    //   RETURN_IF_TRITON_ERROR(
-    //       triton_client_backend->client_.http_client_->UpdateTraceSettings(
-    //           &response, "", trace_options));
-    // }
   } else {
     std::pair<bool, triton::client::SslOptions> grpc_ssl_options_pair =
         ParseGrpcSslOptions(ssl_options);
@@ -126,12 +112,12 @@ TritonClientBackend::Create(
     RETURN_IF_TRITON_ERROR(tc::InferenceServerGrpcClient::Create(
         &(triton_client_backend->client_.grpc_client_), url, verbose, use_ssl,
         grpc_ssl_options));
-    // if (!trace_options.empty()) {
-    //   inference::TraceSettingResponse response;
-    //   RETURN_IF_TRITON_ERROR(
-    //       triton_client_backend->client_.grpc_client_->UpdateTraceSettings(
-    //           &response, "", trace_options));
-    // }
+    if (!trace_options.empty()) {
+      inference::TraceSettingResponse response;
+      RETURN_IF_TRITON_ERROR(
+          triton_client_backend->client_.grpc_client_->UpdateTraceSettings(
+              &response, "", trace_options));
+    }
   }
 
   *client_backend = std::move(triton_client_backend);
