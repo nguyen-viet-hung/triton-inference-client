@@ -300,7 +300,7 @@ Usage(char** argv, const std::string& msg = std::string())
   std::cerr << "\t--trace-level" << std::endl;
   std::cerr << "\t--trace-rate" << std::endl;
   std::cerr << "\t--trace-count" << std::endl;
-  std::cerr << "\t--trace-log-frequency" << std::endl;
+  std::cerr << "\t--log-frequency" << std::endl;
   std::cerr << std::endl;
   std::cerr << "==== OPTIONS ==== \n \n";
 
@@ -740,9 +740,9 @@ Usage(char** argv, const std::string& msg = std::string())
   std::cerr
       << FormatMessage(
              " --trace-file: Set the file where trace output will be saved."
-             " If --trace-log-frequency is also specified, this argument "
+             " If --log-frequency is also specified, this argument "
              "value will be the prefix of the files to save the trace "
-             "output. See --trace-log-frequency for details. Only used for "
+             "output. See --log-frequency for details. Only used for "
              "service-kind of triton and triton_c_api. Default value is none.",
              18)
       << std::endl;
@@ -769,7 +769,7 @@ Usage(char** argv, const std::string& msg = std::string())
       << std::endl;
   std::cerr
       << FormatMessage(
-             " --trace-log-frequency:  Set the trace log frequency. If the "
+             " --log-frequency:  Set the trace log frequency. If the "
              "value is 0, Triton will only log the trace output to "
              "<trace-file> when shutting down. Otherwise, Triton will log "
              "the trace output to <trace-file>.<idx> when it collects the "
@@ -933,7 +933,7 @@ PerfAnalyzer::Run(int argc, char** argv)
       {"trace-level", 1, 0, 45},
       {"trace-rate", 1, 0, 46},
       {"trace-count", 1, 0, 47},
-      {"trace-log-frequency", 1, 0, 48},
+      {"log-frequency", 1, 0, 48},
       {0, 0, 0, 0}};
 
   // Parse commandline...
@@ -1344,18 +1344,22 @@ PerfAnalyzer::Run(int argc, char** argv)
         break;
       }
       case 44: {
+        std::cout << "Trace_file: " << optarg << std::endl;
         trace_options["trace_file"] = {optarg};
         break;
       }
       case 45: {
+        std::cout << "Trace_level: " << optarg << std::endl;
         trace_options["trace_level"] = {optarg};
         break;
       }
       case 46: {
+        std::cout << "Trace_rate: " << optarg << std::endl;
         trace_options["trace_rate"] = {optarg};
         break;
       }
       case 47: {
+        std::cout << "Trace_count: " << optarg << std::endl;
         trace_options["trace_count"] = {optarg};
         break;
       }
