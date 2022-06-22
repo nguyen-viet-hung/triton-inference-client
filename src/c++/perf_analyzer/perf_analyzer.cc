@@ -1344,22 +1344,18 @@ PerfAnalyzer::Run(int argc, char** argv)
         break;
       }
       case 44: {
-        std::cout << "Trace_file: " << optarg << std::endl;
         trace_options["trace_file"] = {optarg};
         break;
       }
       case 45: {
-        std::cout << "Trace_level: " << optarg << std::endl;
         trace_options["trace_level"] = {optarg};
         break;
       }
       case 46: {
-        std::cout << "Trace_rate: " << optarg << std::endl;
         trace_options["trace_rate"] = {optarg};
         break;
       }
       case 47: {
-        std::cout << "Trace_count: " << optarg << std::endl;
         trace_options["trace_count"] = {optarg};
         break;
       }
