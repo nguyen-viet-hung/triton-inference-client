@@ -748,7 +748,7 @@ Usage(char** argv, const std::string& msg = std::string())
       << std::endl;
   std::cerr
       << FormatMessage(
-             " trace-level: Specify a trace level. OFF to disable tracing, "
+             " --trace-level: Specify a trace level. OFF to disable tracing, "
              "TIMESTAMPS to trace timestamps, TENSORS to trace tensors. It "
              "may be specified multiple times to trace multiple "
              "informations. Default is OFF.",
