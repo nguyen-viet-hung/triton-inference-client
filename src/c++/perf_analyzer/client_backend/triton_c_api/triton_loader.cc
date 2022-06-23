@@ -162,6 +162,7 @@ InferTraceActivityCaller(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
+  std::cout << "InferTraceActivityCaller called" << std::endl;
   TritonLoader::InferTraceActivity(trace, activity, timestamp_ns, userp);
 }
 
@@ -169,6 +170,7 @@ void
 InferTraceCompleteCaller(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
+  std::cout << "InferTraceCompleteCaller called" << std::endl;
   TritonLoader::InferTraceComplete(trace, userp);
 }
 
@@ -1212,7 +1214,7 @@ TritonLoader::InferTraceActivity(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
-  // TODO: Remove extra print statements for timestamps in client (from previous PRs) once builds
+  std::cout << "InferTraceActivity called" << std::endl;
   uint64_t id = 0;
   GetSingleton()->inference_trace_id_fn_(trace, &id);
   std::cout << "{\"id\":" << id << ",\"timestamps\":["
@@ -1224,6 +1226,7 @@ void
 TritonLoader::InferTraceComplete(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
+  std::cout << "InferTraceComplete called" << std::endl;
   GetSingleton()->inference_trace_delete_fn_(&trace);
 }
 
