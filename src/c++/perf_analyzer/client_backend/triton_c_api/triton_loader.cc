@@ -142,7 +142,6 @@ InferRequestComplete(
   // anything here
 }
 
-
 void
 InferResponseComplete(
     TRITONSERVER_InferenceResponse* response, const uint32_t flags, void* userp)
@@ -588,6 +587,10 @@ TritonLoader::LoadServerLibrary()
   TritonServerStringToDatatypeFn_t stdtfn;
 
   TritonServerInferenceResponseOutputFn_t irofn;
+  TRITONSERVER_InferenceTraceNewFn_t itnfn;
+  TRITONSERVER_InferenceTraceDeleteFn_t itdfn;
+  TRITONSERVER_InferenceTraceActivityStringFn_t itasfn;
+  TRITONSERVER_InferenceTraceIdFn_t itifn;
   TritonServerRequestIdFn_t ridfn;
   TritonServerRequestDeleteFn_t rdfn;
   TritonServerModelStatisticsFn_t msfn;
@@ -745,6 +748,18 @@ TritonLoader::LoadServerLibrary()
       dlhandle_, "TRITONSERVER_InferenceRequestDelete", false /* optional */,
       reinterpret_cast<void**>(&rdfn)));
   RETURN_IF_ERROR(GetEntrypoint(
+      dlhandle_, "TRITONSERVER_InferenceTraceNew", false /* optional */,
+      reinterpret_cast<void**>(&itnfn)));
+  RETURN_IF_ERROR(GetEntrypoint(
+      dlhandle_, "TRITONSERVER_InferenceTraceDelete", false /* optional */,
+      reinterpret_cast<void**>(&itdfn)));
+  RETURN_IF_ERROR(GetEntrypoint(
+      dlhandle_, "TRITONSERVER_InferenceTraceActivityString", false /* optional */,
+      reinterpret_cast<void**>(&itasfn)));
+  RETURN_IF_ERROR(GetEntrypoint(
+      dlhandle_, "TRITONSERVER_InferenceTraceId", false /* optional */,
+      reinterpret_cast<void**>(&itifn)));
+  RETURN_IF_ERROR(GetEntrypoint(
       dlhandle_, "TRITONSERVER_ServerModelStatistics", false /* optional */,
       reinterpret_cast<void**>(&msfn)));
 
@@ -811,6 +826,10 @@ TritonLoader::LoadServerLibrary()
   string_to_datatype_fn_ = stdtfn;
 
   inference_response_output_fn_ = irofn;
+  inference_trace_new_fn_ = itnfn;
+  inference_trace_delete_fn_ = itdfn;
+  inference_trace_activity_string_fn_ = itasfn;
+  inference_trace_id_fn_ = itifn;
   request_id_fn_ = ridfn;
   request_delete_fn_ = rdfn;
   model_statistics_fn_ = msfn;
@@ -882,6 +901,10 @@ TritonLoader::ClearHandles()
   string_to_datatype_fn_ = nullptr;
 
   inference_response_output_fn_ = nullptr;
+  inference_trace_new_fn_ = nullptr;
+  inference_trace_delete_fn_ = nullptr;
+  inference_trace_activity_string_fn_ = nullptr;
+  inference_trace_id_fn_ = nullptr;
   request_id_fn_ = nullptr;
   request_delete_fn_ = nullptr;
   model_statistics_fn_ = nullptr;
@@ -927,6 +950,13 @@ TritonLoader::Infer(
           irequest, allocator, nullptr /* response_allocator_userp */,
           InferResponseComplete, reinterpret_cast<void*>(p)),
       "setting response callback");
+  TRITONSERVER_InferenceTrace* trace;
+  RETURN_IF_TRITONSERVER_ERROR(
+    // Standard logging level for debugging purposes
+    GetSingleton()->inference_trace_new_fn_(&trace, TRITONSERVER_TRACE_LEVEL_TIMESTAMPS,
+    0, InferTraceActivity,
+    InferTraceComplete, nullptr),
+    "creating new trace");
   RETURN_IF_TRITONSERVER_ERROR(
       GetSingleton()->infer_async_fn_(
           (GetSingleton()->server_).get(), irequest, nullptr /* trace */),
@@ -1157,6 +1187,27 @@ TritonLoader::GetSingleton()
 {
   static TritonLoader loader;
   return &loader;
+}
+
+void
+TritonLoader::InferTraceActivity(
+    TRITONSERVER_InferenceTrace* trace,
+    TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
+    void* userp)
+{
+  // TODO: Remove extra print statements for timestamps in client (from previous PRs) once builds
+  uint64_t id = 0;
+  GetSingleton()->inference_trace_id_fn_(trace, &id);
+  std::cout << "{\"id\":" << id << ",\"timestamps\":["
+      << "{\"name\":\"" << GetSingleton()->inference_trace_activity_string_fn_(activity)
+      << "\",\"ns\":" << timestamp_ns << "}]}" << std::endl;
+}
+
+void
+TritonLoader::InferTraceComplete(
+  TRITONSERVER_InferenceTrace* trace, void* userp)
+{
+  GetSingleton()->inference_trace_delete_fn_(&trace);
 }
 
 TritonLoader::~TritonLoader()

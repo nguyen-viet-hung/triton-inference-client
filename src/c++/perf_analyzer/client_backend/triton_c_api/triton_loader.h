@@ -107,6 +107,13 @@ class TritonLoader : public tc::InferenceServerClient {
       const std::vector<const tc::InferRequestedOutput*>& outputs,
       InferResult** result);
 
+  void InferTraceActivity(
+      TRITONSERVER_InferenceTrace* trace,
+      TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
+      void* userp);
+  void InferTraceComplete(
+      TRITONSERVER_InferenceTrace* trace, void* userp);
+
   static Error ModelInferenceStatistics(
       const std::string& model_name, const std::string& model_version,
       rapidjson::Document* infer_stat);
@@ -309,6 +316,20 @@ class TritonLoader : public tc::InferenceServerClient {
   // TRITONSERVER_InferenceRequestDelete
   typedef TRITONSERVER_Error* (*TritonServerRequestDeleteFn_t)(
       TRITONSERVER_InferenceRequest* inference_request);
+  // TRITONSERVER_InferenceTraceNew
+  typedef TRITONSERVER_Error* (*TRITONSERVER_InferenceTraceNewFn_t)(
+    TRITONSERVER_InferenceTrace** trace, TRITONSERVER_InferenceTraceLevel level,
+    uint64_t parent_id, TRITONSERVER_InferenceTraceActivityFn_t activity_fn,
+    TRITONSERVER_InferenceTraceReleaseFn_t release_fn, void* trace_userp);
+  // TRITONSERVER_InferenceTraceDelete
+  typedef TRITONSERVER_Error* (*TRITONSERVER_InferenceTraceDeleteFn_t)(
+    TRITONSERVER_InferenceTrace** trace);
+  // TRITONSERVER_InferenceTraceActivityString
+  typedef const char* (*TRITONSERVER_InferenceTraceActivityStringFn_t)(
+    TRITONSERVER_InferenceTraceActivity activity);
+  // TRITONSERVER_InferenceTraceId
+  typedef TRITONSERVER_Error* (*TRITONSERVER_InferenceTraceIdFn_t)(
+    TRITONSERVER_InferenceTrace* trace, uint64_t* id);
   // TRITONSERVER_ServerModelStatistics
   typedef TRITONSERVER_Error* (*TritonServerModelStatisticsFn_t)(
       TRITONSERVER_Server* server, const char* model_name,
@@ -428,6 +449,10 @@ class TritonLoader : public tc::InferenceServerClient {
   TritonServerStringToDatatypeFn_t string_to_datatype_fn_;
 
   TritonServerInferenceResponseOutputFn_t inference_response_output_fn_;
+  TRITONSERVER_InferenceTraceNewFn_t inference_trace_new_fn_;
+  TRITONSERVER_InferenceTraceDeleteFn_t inference_trace_delete_fn_;
+  TRITONSERVER_InferenceTraceActivityStringFn_t inference_trace_activity_string_fn_;
+  TRITONSERVER_InferenceTraceIdFn_t inference_trace_id_fn_;
   TritonServerRequestIdFn_t request_id_fn_;
   TritonServerRequestDeleteFn_t request_delete_fn_;
   TritonServerModelStatisticsFn_t model_statistics_fn_;
