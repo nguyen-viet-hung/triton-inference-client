@@ -107,11 +107,11 @@ class TritonLoader : public tc::InferenceServerClient {
       const std::vector<const tc::InferRequestedOutput*>& outputs,
       InferResult** result);
 
-  void InferTraceActivity(
+  static void InferTraceActivity(
       TRITONSERVER_InferenceTrace* trace,
       TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
       void* userp);
-  void InferTraceComplete(
+  static void InferTraceComplete(
       TRITONSERVER_InferenceTrace* trace, void* userp);
 
   static Error ModelInferenceStatistics(

@@ -155,6 +155,23 @@ InferResponseComplete(
   }
 }
 
+
+void
+InferTraceActivityCaller(
+    TRITONSERVER_InferenceTrace* trace,
+    TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
+    void* userp)
+{
+  TritonLoader::InferTraceActivity(trace, activity, timestamp_ns, userp);
+}
+
+void
+InferTraceCompleteCaller(
+  TRITONSERVER_InferenceTrace* trace, void* userp)
+{
+  TritonLoader::InferTraceComplete(trace, userp);
+}
+
 Error
 GetModelVersionFromString(const std::string& version_string, int64_t* version)
 {
@@ -954,8 +971,8 @@ TritonLoader::Infer(
   RETURN_IF_TRITONSERVER_ERROR(
     // Standard logging level for debugging purposes
     GetSingleton()->inference_trace_new_fn_(&trace, TRITONSERVER_TRACE_LEVEL_TIMESTAMPS,
-    0, InferTraceActivity,
-    InferTraceComplete, nullptr),
+    0, InferTraceActivityCaller,
+    InferTraceCompleteCaller, nullptr),
     "creating new trace");
   RETURN_IF_TRITONSERVER_ERROR(
       GetSingleton()->infer_async_fn_(
