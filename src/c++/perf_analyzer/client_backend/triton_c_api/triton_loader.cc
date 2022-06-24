@@ -162,7 +162,6 @@ InferTraceActivityCaller(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
-  std::cerr << "InferTraceActivityCaller called" << std::endl;
   TritonLoader::InferTraceActivity(trace, activity, timestamp_ns, userp);
 }
 
@@ -170,7 +169,6 @@ void
 InferTraceCompleteCaller(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
-  std::cerr << "InferTraceCompleteCaller called" << std::endl;
   TritonLoader::InferTraceComplete(trace, userp);
 }
 
@@ -1214,7 +1212,6 @@ TritonLoader::InferTraceActivity(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
-  std::cerr << "InferTraceActivity called" << std::endl;
   uint64_t id = 0;
   GetSingleton()->inference_trace_id_fn_(trace, &id);
   std::ofstream file;
@@ -1234,8 +1231,8 @@ void
 TritonLoader::InferTraceComplete(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
-  std::cerr << "InferTraceComplete called" << std::endl;
-  GetSingleton()->inference_trace_delete_fn_(&trace);
+  // Delete results in free invalid pointer error, so do nothing for now.
+  // GetSingleton()->inference_trace_delete_fn_(&trace);
 }
 
 TritonLoader::~TritonLoader()
