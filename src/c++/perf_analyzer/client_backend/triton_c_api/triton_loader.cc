@@ -978,7 +978,7 @@ TritonLoader::Infer(
     "creating new trace");
   RETURN_IF_TRITONSERVER_ERROR(
       GetSingleton()->infer_async_fn_(
-          (GetSingleton()->server_).get(), irequest, nullptr /* trace */),
+          (GetSingleton()->server_).get(), irequest, trace /* trace */),
       "running inference");
   timer.CaptureTimestamp(tc::RequestTimers::Kind::SEND_END);
   // Wait for the inference to complete.
