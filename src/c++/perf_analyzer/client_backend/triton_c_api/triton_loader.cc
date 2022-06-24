@@ -162,7 +162,7 @@ InferTraceActivityCaller(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
-  std::cout << "InferTraceActivityCaller called" << std::endl;
+  std::cerr << "InferTraceActivityCaller called" << std::endl;
   TritonLoader::InferTraceActivity(trace, activity, timestamp_ns, userp);
 }
 
@@ -170,7 +170,7 @@ void
 InferTraceCompleteCaller(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
-  std::cout << "InferTraceCompleteCaller called" << std::endl;
+  std::cerr << "InferTraceCompleteCaller called" << std::endl;
   TritonLoader::InferTraceComplete(trace, userp);
 }
 
@@ -1214,10 +1214,18 @@ TritonLoader::InferTraceActivity(
     TRITONSERVER_InferenceTraceActivity activity, uint64_t timestamp_ns,
     void* userp)
 {
-  std::cout << "InferTraceActivity called" << std::endl;
+  std::cerr << "InferTraceActivity called" << std::endl;
   uint64_t id = 0;
   GetSingleton()->inference_trace_id_fn_(trace, &id);
-  std::cout << "{\"id\":" << id << ",\"timestamps\":["
+  std::ofstream file;
+  file.open("trace.json", std::ios::out | std::ios::app);
+  if (file.fail())
+      throw std::ios_base::failure(std::strerror(errno));
+
+  //make sure write fails with exception if something is wrong
+  file.exceptions(file.exceptions() | std::ios::failbit | std::ifstream::badbit);
+
+  file << "{\"id\":" << id << ",\"timestamps\":["
       << "{\"name\":\"" << GetSingleton()->inference_trace_activity_string_fn_(activity)
       << "\",\"ns\":" << timestamp_ns << "}]}" << std::endl;
 }
@@ -1226,7 +1234,7 @@ void
 TritonLoader::InferTraceComplete(
   TRITONSERVER_InferenceTrace* trace, void* userp)
 {
-  std::cout << "InferTraceComplete called" << std::endl;
+  std::cerr << "InferTraceComplete called" << std::endl;
   GetSingleton()->inference_trace_delete_fn_(&trace);
 }
 
