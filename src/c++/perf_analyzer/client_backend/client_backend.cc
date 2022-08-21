@@ -118,13 +118,12 @@ ClientBackendFactory::Create(
     const GrpcCompressionAlgorithm compression_algorithm,
     std::shared_ptr<Headers> http_headers,
     const std::string& triton_server_path,
-    const std::string& model_repository_path, const std::string& memory_type,
-    const bool verbose, std::shared_ptr<ClientBackendFactory>* factory)
+    const std::string& model_repository_path, const bool verbose,
+    std::shared_ptr<ClientBackendFactory>* factory)
 {
   factory->reset(new ClientBackendFactory(
       kind, url, protocol, ssl_options, trace_options, compression_algorithm,
-      http_headers, triton_server_path, model_repository_path, memory_type,
-      verbose));
+      http_headers, triton_server_path, model_repository_path, verbose));
   return Error::Success;
 }
 
@@ -135,7 +134,7 @@ ClientBackendFactory::CreateClientBackend(
   RETURN_IF_CB_ERROR(ClientBackend::Create(
       kind_, url_, protocol_, ssl_options_, trace_options_,
       compression_algorithm_, http_headers_, verbose_, triton_server_path,
-      model_repository_path_, memory_type_, client_backend));
+      model_repository_path_, client_backend));
   return Error::Success;
 }
 
@@ -150,7 +149,7 @@ ClientBackend::Create(
     const GrpcCompressionAlgorithm compression_algorithm,
     std::shared_ptr<Headers> http_headers, const bool verbose,
     const std::string& triton_server_path,
-    const std::string& model_repository_path, const std::string& memory_type,
+    const std::string& model_repository_path,
     std::unique_ptr<ClientBackend>* client_backend)
 {
   std::unique_ptr<ClientBackend> local_backend;
@@ -176,8 +175,7 @@ ClientBackend::Create(
 #ifdef TRITON_ENABLE_PERF_ANALYZER_C_API
   else if (kind == TRITON_C_API) {
     RETURN_IF_CB_ERROR(tritoncapi::TritonCApiClientBackend::Create(
-        triton_server_path, model_repository_path, memory_type, verbose,
-        &local_backend));
+        triton_server_path, model_repository_path, verbose, &local_backend));
   }
 #endif  // TRITON_ENABLE_PERF_ANALYZER_C_API
   else {
@@ -311,6 +309,16 @@ ClientBackend::RegisterCudaSharedMemory(
   return Error(
       "client backend of kind " + BackendKindToString(kind_) +
           " does not support RegisterCudaSharedMemory API",
+      pa::GENERIC_ERROR);
+}
+
+Error
+ClientBackend::RegisterCudaMemory(
+    const std::string& name, void* handle, const size_t byte_size)
+{
+  return Error(
+      "client backend of kind " + BackendKindToString(kind_) +
+          " does not support RegisterCudaMemory API",
       pa::GENERIC_ERROR);
 }
 

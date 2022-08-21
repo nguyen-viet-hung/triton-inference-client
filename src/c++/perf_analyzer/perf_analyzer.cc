@@ -865,7 +865,6 @@ PerfAnalyzer::Run(int argc, char** argv)
   const std::string DEFAULT_MEMORY_TYPE = "system";
   std::string triton_server_path = "/opt/tritonserver";
   std::string model_repository_path;
-  std::string memory_type = DEFAULT_MEMORY_TYPE;  // currently not used
 
   // gRPC and HTTP SSL options
   cb::SslOptionsBase ssl_options;
@@ -1607,20 +1606,19 @@ PerfAnalyzer::Run(int argc, char** argv)
     if (!target_concurrency) {
       std::cerr << "Only target concurrency is supported by C API" << std::endl;
       return pa::GENERIC_ERROR;
-    } else if (shared_memory_type != pa::NO_SHARED_MEMORY) {
-      std::cerr << "Shared memory not yet supported by C API" << std::endl;
+    } else if (shared_memory_type == pa::SYSTEM_SHARED_MEMORY) {
+      std::cerr << "System shared memory is not supported by C-API."
+                << std::endl;
       return pa::GENERIC_ERROR;
-    } else if (
-        triton_server_path.empty() || model_repository_path.empty() ||
-        memory_type.empty()) {
+    } else if (triton_server_path.empty() || model_repository_path.empty()) {
       std::cerr
           << "Not enough information to create C API. /lib/libtritonserver.so "
              "directory:"
           << triton_server_path << " model repo:" << model_repository_path
-          << " memory type:" << memory_type << std::endl;
+          << std::endl;
       return pa::GENERIC_ERROR;
     } else if (async) {
-      std::cerr << "Async mode is not supported by C-API service kind." << std::endl;
+      std::cerr << "Async API not yet supported by C API" << std::endl;
       return pa::GENERIC_ERROR;
     }
     protocol = cb::ProtocolType::UNKNOWN;
@@ -1633,7 +1631,7 @@ PerfAnalyzer::Run(int argc, char** argv)
       cb::ClientBackendFactory::Create(
           kind, url, protocol, ssl_options, trace_options,
           compression_algorithm, http_headers, triton_server_path,
-          model_repository_path, memory_type, extra_verbose, &factory),
+          model_repository_path, extra_verbose, &factory),
       "failed to create client factory");
 
   std::unique_ptr<cb::ClientBackend> backend;
@@ -1902,7 +1900,7 @@ PerfAnalyzer::Run(int argc, char** argv)
     // In the case of early_exit, the thread does not return and continues to
     // report the summary
     if (!pa::early_exit) {
-      return 1;
+      return err.Err();
     }
   }
   if (summary.size()) {

@@ -249,8 +249,6 @@ class ClientBackendFactory {
   /// /opt/tritonserver) Must contain libtritonserver.so.
   /// \param model_repository_path Only for C api backend. Path to model
   /// repository which contains the desired model.
-  /// \param memory_type Only for C api backend. Type of memory used
-  /// (system is default)
   /// \param verbose Enables the verbose mode.
   /// \param factory Returns a new ClientBackend object.
   /// \return Error object indicating success or failure.
@@ -261,8 +259,8 @@ class ClientBackendFactory {
       const GrpcCompressionAlgorithm compression_algorithm,
       std::shared_ptr<Headers> http_headers,
       const std::string& triton_server_path,
-      const std::string& model_repository_path, const std::string& memory_type,
-      const bool verbose, std::shared_ptr<ClientBackendFactory>* factory);
+      const std::string& model_repository_path, const bool verbose,
+      std::shared_ptr<ClientBackendFactory>* factory);
 
   /// Create a ClientBackend.
   /// \param backend Returns a new Client backend object.
@@ -276,14 +274,12 @@ class ClientBackendFactory {
       const GrpcCompressionAlgorithm compression_algorithm,
       const std::shared_ptr<Headers> http_headers,
       const std::string& triton_server_path,
-      const std::string& model_repository_path, const std::string& memory_type,
-      const bool verbose)
+      const std::string& model_repository_path, const bool verbose)
       : kind_(kind), url_(url), protocol_(protocol), ssl_options_(ssl_options),
         trace_options_(trace_options),
         compression_algorithm_(compression_algorithm),
         http_headers_(http_headers), triton_server_path(triton_server_path),
-        model_repository_path_(model_repository_path),
-        memory_type_(memory_type), verbose_(verbose)
+        model_repository_path_(model_repository_path), verbose_(verbose)
   {
   }
 
@@ -296,7 +292,6 @@ class ClientBackendFactory {
   std::shared_ptr<Headers> http_headers_;
   std::string triton_server_path;
   std::string model_repository_path_;
-  std::string memory_type_;
   const bool verbose_;
 };
 
@@ -312,7 +307,6 @@ class ClientBackend {
       const GrpcCompressionAlgorithm compression_algorithm,
       std::shared_ptr<Headers> http_headers, const bool verbose,
       const std::string& library_directory, const std::string& model_repository,
-      const std::string& memory_type,
       std::unique_ptr<ClientBackend>* client_backend);
 
   /// Destructor for the client backend object
@@ -376,6 +370,10 @@ class ClientBackend {
   virtual Error RegisterCudaSharedMemory(
       const std::string& name, const cudaIpcMemHandle_t& handle,
       const size_t byte_size);
+
+  /// Registers cuda memory to the server.
+  virtual Error RegisterCudaMemory(
+      const std::string& name, void* handle, const size_t byte_size);
 
   //
   // Shared Memory Utilities
