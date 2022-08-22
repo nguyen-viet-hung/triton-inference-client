@@ -39,7 +39,7 @@ Installs Maven, Java JDK and builds Tritonserver Java bindings
 "
 
 # Get all options:
-OPTS=$(getopt -o ht:b:v:c:j: --long help,triton-home,build-home:,maven-version:,core-tag:jar-install-path:,--javacpp-branch:,--javacpp-branch-tag: -- "$@")
+OPTS=$(getopt -o ht:b:v:c:j: --long help,triton-home,build-home:,maven-version:,core-tag:,jar-install-path:,--javacpp-branch:,--javacpp-branch-tag: -- "$@")
 
 TRITON_HOME="/opt/tritonserver"
 BUILD_HOME="/tmp/build"
