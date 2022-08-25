@@ -27,9 +27,7 @@
 
 #include <getopt.h>
 #include <signal.h>
-
 #include <algorithm>
-
 #include "command_line_parser.h"
 #include "concurrency_manager.h"
 #include "custom_load_manager.h"
@@ -174,14 +172,14 @@ class PerfAnalyzer {
   virtual ~PerfAnalyzer(){};
 
   // Main runner function for Perf Analyzer.
-  void run();
+  void Run();
 
  private:
   pa::PAParamsPtr params_;
-  std::unique_ptr<pa::InferenceProfiler> profiler;
-  std::unique_ptr<cb::ClientBackend> backend;
-  std::shared_ptr<pa::ModelParser> parser;
-  std::vector<pa::PerfStatus> summary;
+  std::unique_ptr<pa::InferenceProfiler> profiler_;
+  std::unique_ptr<cb::ClientBackend> backend_;
+  std::shared_ptr<pa::ModelParser> parser_;
+  std::vector<pa::PerfStatus> summary_;
 
   //
   // Helper methods
@@ -189,9 +187,9 @@ class PerfAnalyzer {
 
   // Parse the options out of the command line argument
   //
-  void create_analyzer_objects();
-  void prerun_report();
-  void profile();
-  void write_report();
-  void finalize();
+  void CreateAnalyzerObjects();
+  void PrerunReport();
+  void Profile();
+  void WriteReport();
+  void Finalize();
 };

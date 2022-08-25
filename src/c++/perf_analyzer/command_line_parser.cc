@@ -38,17 +38,17 @@
 namespace triton { namespace perfanalyzer {
 
 PAParamsPtr
-CLParser::parse(int argc, char** argv)
+CLParser::Parse(int argc, char** argv)
 {
-  parse_command_line(argc, argv);
-  verify_options();
+  ParseCommandLine(argc, argv);
+  VerifyOptions();
 
   return params_;
 }
 
 // Used to format the usage message
 std::string
-CLParser::format_message(std::string str, int offset) const
+CLParser::FormatMessage(std::string str, int offset) const
 {
   int width = 60;
   int current_pos = offset;
@@ -63,7 +63,7 @@ CLParser::format_message(std::string str, int offset) const
 }
 
 void
-CLParser::usage(const std::string& msg)
+CLParser::Usage(const std::string& msg)
 {
   if (!msg.empty()) {
     std::cerr << "error: " << msg << std::endl;
@@ -154,7 +154,7 @@ CLParser::usage(const std::string& msg)
   std::cerr << "==== OPTIONS ==== \n \n";
 
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --service-kind: Describes the kind of service perf_analyzer to "
              "generate load for. The options are \"triton\", \"triton_c_api\", "
              "\"tfserving\" and \"torchserve\". Default value is \"triton\". "
@@ -170,19 +170,19 @@ CLParser::usage(const std::string& msg)
 
   std::cerr
       << std::setw(9) << std::left << " -m: "
-      << format_message(
+      << FormatMessage(
              "This is a required argument and is used to specify the model"
              " against which to run perf_analyzer.",
              9)
       << std::endl;
   std::cerr << std::setw(9) << std::left << " -x: "
-            << format_message(
+            << FormatMessage(
                    "The version of the above model to be used. If not specified"
                    " the most recent version (that is, the highest numbered"
                    " version) of the model will be used.",
                    9)
             << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --model-signature-name: The signature name of the saved "
                    "model to use. Default value is \"serving_default\". This "
                    "option will be ignored if --service-kind is not "
@@ -190,15 +190,15 @@ CLParser::usage(const std::string& msg)
                    18)
             << std::endl;
   std::cerr << std::setw(9) << std::left
-            << " -v: " << format_message("Enables verbose mode.", 9)
+            << " -v: " << FormatMessage("Enables verbose mode.", 9)
             << std::endl;
   std::cerr << std::setw(9) << std::left
-            << " -v -v: " << format_message("Enables extra verbose mode.", 9)
+            << " -v -v: " << FormatMessage("Enables extra verbose mode.", 9)
             << std::endl;
   std::cerr << std::endl;
   std::cerr << "I. MEASUREMENT PARAMETERS: " << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --async (-a): Enables asynchronous mode in perf_analyzer. "
              "By default, perf_analyzer will use synchronous API to "
              "request inference. However, if the model is sequential "
@@ -209,14 +209,14 @@ CLParser::usage(const std::string& msg)
              "maintain the concurrency.",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --sync: Force enables synchronous mode in perf_analyzer. "
                    "Can be used to operate perf_analyzer with sequential model "
                    "in synchronous mode.",
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --measurement-interval (-p): Indicates the time interval used "
              "for each measurement in milliseconds. The perf analyzer will "
              "sample a time interval specified by -p and take measurement over "
@@ -224,7 +224,7 @@ CLParser::usage(const std::string& msg)
              "value is 5000 msec.",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --measurement-mode <\"time_windows\"|\"count_windows\">: "
                    "Indicates the mode used for stabilizing measurements."
                    " \"time_windows\" will create windows such that the length "
@@ -235,7 +235,7 @@ CLParser::usage(const std::string& msg)
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --measurement-request-count: "
              "Indicates the minimum number of requests to be collected in each "
              "measurement window when \"count_windows\" mode is used. This "
@@ -244,7 +244,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --concurrency-range <start:end:step>: Determines the range of "
              "concurrency levels covered by the perf_analyzer. The "
              "perf_analyzer "
@@ -259,7 +259,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --request-rate-range <start:end:step>: Determines the range of "
              "request rates for load generated by analyzer. This option can "
              "take floating-point values. The search along the request rate "
@@ -276,7 +276,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --request-distribution <\"poisson\"|\"constant\">: Specifies "
              "the time interval distribution between dispatching inference "
              "requests to the server. Poisson distribution closely mimics the "
@@ -286,7 +286,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --request-intervals: Specifies a path to a file containing time "
              "intervals in microseconds. Each time interval should be in a new "
              "line. The analyzer will try to maintain time intervals between "
@@ -299,7 +299,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              "--binary-search: Enables the binary search on the specified "
              "search range. This option requires 'start' and 'end' to be "
              "expilicitly specified in the --concurrency-range or "
@@ -310,7 +310,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
 
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    "--num-of-sequences: Sets the number of concurrent "
                    "sequences for sequence models. This option is ignored when "
                    "--request-rate-range is not specified. By default, its "
@@ -319,7 +319,7 @@ CLParser::usage(const std::string& msg)
             << std::endl;
 
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --latency-threshold (-l): Sets the limit on the observed "
              "latency. Analyzer will terminate the concurrency search once "
              "the measured latency exceeds this threshold. By default, "
@@ -328,7 +328,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --max-threads: Sets the maximum number of threads that will be "
              "created for providing desired concurrency or request rate. "
              "However, when running"
@@ -339,7 +339,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --stability-percentage (-s): Indicates the allowed variation in "
              "latency measurements when determining if a result is stable. The "
              "measurement is considered as stable if the ratio of max / min "
@@ -348,7 +348,7 @@ CLParser::usage(const std::string& msg)
              "10(%).",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --max-trials (-r): Indicates the maximum number of "
                    "measurements for each concurrency level visited during "
                    "search. The perf analyzer will take multiple measurements "
@@ -359,7 +359,7 @@ CLParser::usage(const std::string& msg)
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --percentile: Indicates the confidence value as a percentile "
              "that will be used to determine if a measurement is stable. For "
              "example, a value of 85 indicates that the 85th percentile "
@@ -371,10 +371,10 @@ CLParser::usage(const std::string& msg)
   std::cerr << std::endl;
   std::cerr << "II. INPUT DATA OPTIONS: " << std::endl;
   std::cerr << std::setw(9) << std::left
-            << " -b: " << format_message("Batch size for each request sent.", 9)
+            << " -b: " << FormatMessage("Batch size for each request sent.", 9)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --input-data: Select the type of data that will be used "
              "for input in inference requests. The available options are "
              "\"zero\", \"random\", path to a directory or a json file. If the "
@@ -398,7 +398,7 @@ CLParser::usage(const std::string& msg)
              "this option points to a json file. Default is \"random\".",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --shared-memory <\"system\"|\"cuda\"|\"none\">: Specifies "
                    "the type of the shared memory to use for input and output "
                    "data. Default is none.",
@@ -406,7 +406,7 @@ CLParser::usage(const std::string& msg)
             << std::endl;
 
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --output-shared-memory-size: The size in bytes of the shared "
              "memory region to allocate per output tensor. Only needed when "
              "one or more of the outputs are of string type and/or variable "
@@ -418,7 +418,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
 
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --shape: The shape used for the specified input. The "
                    "argument must be specified as 'name:shape' where the shape "
                    "is a comma-separated list for dimension sizes, for example "
@@ -427,7 +427,7 @@ CLParser::usage(const std::string& msg)
                    "shapes for different inputs.",
                    18)
             << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --sequence-length: Indicates the base length of a "
                    "sequence used for sequence models. A sequence with length "
                    "x will be composed of x requests to be sent as the "
@@ -436,7 +436,7 @@ CLParser::usage(const std::string& msg)
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --sequence-id-range <start:end>: Determines the range of "
              "sequence id used by the perf_analyzer. The perf_analyzer "
              "will start from the sequence id of 'start' and go till "
@@ -449,14 +449,14 @@ CLParser::usage(const std::string& msg)
              "without bounds",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --string-length: Specifies the length of the random "
                    "strings to be generated by the analyzer for string input. "
                    "This option is ignored if --input-data points to a "
                    "directory. Default is 128.",
                    18)
             << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --string-data: If provided, analyzer will use this string "
                    "to initialize string input buffers. The perf analyzer will "
                    "replicate the given string to build tensors of required "
@@ -467,7 +467,7 @@ CLParser::usage(const std::string& msg)
   std::cerr << std::endl;
   std::cerr << "III. SERVER DETAILS: " << std::endl;
   std::cerr << std::setw(38) << std::left << " -u: "
-            << format_message(
+            << FormatMessage(
                    "Specify URL to the server. When using triton default is "
                    "\"localhost:8000\" if using HTTP and \"localhost:8001\" "
                    "if using gRPC. When using tfserving default is "
@@ -475,39 +475,39 @@ CLParser::usage(const std::string& msg)
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " -i: "
-            << format_message(
+            << FormatMessage(
                    "The communication protocol to use. The available protocols "
                    "are gRPC and HTTP. Default is HTTP.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " --ssl-grpc-use-ssl: "
-            << format_message(
+            << FormatMessage(
                    "Bool (true|false) for whether "
                    "to use encrypted channel to the server. Default false.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left
             << " --ssl-grpc-root-certifications-file: "
-            << format_message(
+            << FormatMessage(
                    "Path to file containing the "
                    "PEM encoding of the server root certificates.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " --ssl-grpc-private-key-file: "
-            << format_message(
+            << FormatMessage(
                    "Path to file containing the "
                    "PEM encoding of the client's private key.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left
             << " --ssl-grpc-certificate-chain-file: "
-            << format_message(
+            << FormatMessage(
                    "Path to file containing the "
                    "PEM encoding of the client's certificate chain.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " --ssl-https-verify-peer: "
-            << format_message(
+            << FormatMessage(
                    "Number (0|1) to verify the "
                    "peer's SSL certificate. See "
                    "https://curl.se/libcurl/c/CURLOPT_SSL_VERIFYPEER.html for "
@@ -516,7 +516,7 @@ CLParser::usage(const std::string& msg)
             << std::endl;
   std::cerr
       << std::setw(38) << std::left << " --ssl-https-verify-host: "
-      << format_message(
+      << FormatMessage(
              "Number (0|1|2) to verify the "
              "certificate's name against host. "
              "See https://curl.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html for "
@@ -525,30 +525,30 @@ CLParser::usage(const std::string& msg)
       << std::endl;
   std::cerr << std::setw(38) << std::left
             << " --ssl-https-ca-certificates-file: "
-            << format_message(
+            << FormatMessage(
                    "Path to Certificate Authority "
                    "(CA) bundle.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left
             << " --ssl-https-client-certificate-file: "
-            << format_message("Path to the SSL client certificate.", 38)
+            << FormatMessage("Path to the SSL client certificate.", 38)
             << std::endl;
   std::cerr << std::setw(38) << std::left
             << " --ssl-https-client-certificate-type: "
-            << format_message(
+            << FormatMessage(
                    "Type (PEM|DER) of the client "
                    "SSL certificate. Default is PEM.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " --ssl-https-private-key-file: "
-            << format_message(
+            << FormatMessage(
                    "Path to the private keyfile "
                    "for TLS and SSL client cert.",
                    38)
             << std::endl;
   std::cerr << std::setw(38) << std::left << " --ssl-https-private-key-type: "
-            << format_message(
+            << FormatMessage(
                    "Type (PEM|DER) of the private "
                    "key file. Default is PEM.",
                    38)
@@ -557,27 +557,27 @@ CLParser::usage(const std::string& msg)
   std::cerr << "IV. OTHER OPTIONS: " << std::endl;
   std::cerr
       << std::setw(9) << std::left << " -f: "
-      << format_message(
+      << FormatMessage(
              "The latency report will be stored in the file named by "
              "this option. By default, the result is not recorded in a file.",
              9)
       << std::endl;
   std::cerr
       << std::setw(9) << std::left << " -H: "
-      << format_message(
+      << FormatMessage(
              "The header will be added to HTTP requests (ignored for GRPC "
              "requests). The header must be specified as 'Header:Value'. -H "
              "may be specified multiple times to add multiple headers.",
              9)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --streaming: Enables the use of streaming API. This flag is "
              "only valid with gRPC protocol. By default, it is set false.",
              18)
       << std::endl;
 
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --grpc-compression-algorithm: The compression algorithm "
                    "to be used by gRPC when sending request. Only supported "
                    "when grpc protocol is being used. The supported values are "
@@ -586,7 +586,7 @@ CLParser::usage(const std::string& msg)
             << std::endl;
 
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --trace-file: Set the file where trace output will be saved."
              " If --trace-log-frequency is also specified, this argument "
              "value will be the prefix of the files to save the trace "
@@ -595,7 +595,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              "--trace-level: Specify a trace level. OFF to disable tracing, "
              "TIMESTAMPS to trace timestamps, TENSORS to trace tensors. It "
              "may be specified multiple times to trace multiple "
@@ -603,17 +603,17 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --trace-rate: Set the trace sampling rate. Default is 1000.", 18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --trace-count: Set the number of traces to be sampled. "
                    "If the value is -1, the number of traces to be sampled "
                    "will not be limited. Default is -1.",
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --log-frequency:  Set the trace log frequency. If the "
              "value is 0, Triton will only log the trace output to "
              "<trace-file> when shutting down. Otherwise, Triton will log "
@@ -626,7 +626,7 @@ CLParser::usage(const std::string& msg)
              18)
       << std::endl;
 
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --triton-server-directory: The Triton server install "
                    "path. Required by and only used when C API "
                    "is used (--service-kind=triton_c_api). "
@@ -634,14 +634,14 @@ CLParser::usage(const std::string& msg)
                    18)
             << std::endl;
   std::cerr
-      << format_message(
+      << FormatMessage(
              " --model-repository: The model repository of which the model is "
              "loaded. Required by and only used when C API is used "
              "(--service-kind=triton_c_api). "
              "eg:--model-repository=/tmp/host/docker-data/model_unit_test.",
              18)
       << std::endl;
-  std::cerr << format_message(
+  std::cerr << FormatMessage(
                    " --verbose-csv: The csv files generated by perf analyzer "
                    "will include additional information.",
                    18)
@@ -650,7 +650,7 @@ CLParser::usage(const std::string& msg)
 }
 
 void
-CLParser::parse_command_line(int argc, char** argv)
+CLParser::ParseCommandLine(int argc, char** argv)
 {
   argc_ = argc;
   argv_ = argv;
@@ -734,7 +734,7 @@ CLParser::parse_command_line(int argc, char** argv)
         std::string arg = optarg;
         auto colon_pos = arg.rfind(":");
         if (colon_pos == std::string::npos) {
-          usage(
+          Usage(
               "failed to parse input shape. There must be a colon after input "
               "name.");
         }
@@ -754,13 +754,13 @@ CLParser::parse_command_line(int argc, char** argv)
               pos = comma_pos + 1;
             }
             if (dim <= 0) {
-              usage("input shape must be > 0");
+              Usage("input shape must be > 0");
             }
             shape.emplace_back(dim);
           }
         }
         catch (const std::invalid_argument& ia) {
-          usage("failed to parse input shape: " + std::string(optarg));
+          Usage("failed to parse input shape: " + std::string(optarg));
         }
         params_->input_shapes[name] = shape;
         break;
@@ -778,7 +778,7 @@ CLParser::parse_command_line(int argc, char** argv)
           while (pos != std::string::npos) {
             size_t colon_pos = arg.find(":", pos);
             if (index > 2) {
-              usage(
+              Usage(
                   "option concurrency-range can have maximum of three "
                   "elements");
             }
@@ -805,7 +805,7 @@ CLParser::parse_command_line(int argc, char** argv)
           }
         }
         catch (const std::invalid_argument& ia) {
-          usage("failed to parse concurrency range: " + std::string(optarg));
+          Usage("failed to parse concurrency range: " + std::string(optarg));
         }
         break;
       }
@@ -831,7 +831,7 @@ CLParser::parse_command_line(int argc, char** argv)
         } else if (arg.compare("random") == 0) {
           break;
         } else {
-          usage("unsupported input data provided " + std::string(optarg));
+          Usage("unsupported input data provided " + std::string(optarg));
         }
         break;
       }
@@ -860,7 +860,7 @@ CLParser::parse_command_line(int argc, char** argv)
           while (pos != std::string::npos) {
             size_t colon_pos = arg.find(":", pos);
             if (index > 2) {
-              usage(
+              Usage(
                   "option request_rate_range can have maximum of three "
                   "elements");
             }
@@ -877,7 +877,7 @@ CLParser::parse_command_line(int argc, char** argv)
           }
         }
         catch (const std::invalid_argument& ia) {
-          usage("failed to parse request rate range: " + std::string(optarg));
+          Usage("failed to parse request rate range: " + std::string(optarg));
         }
         break;
       }
@@ -896,7 +896,7 @@ CLParser::parse_command_line(int argc, char** argv)
         } else if (arg.compare("constant") == 0) {
           params_->request_distribution = Distribution::CONSTANT;
         } else {
-          usage(
+          Usage(
               "unsupported request distribution provided " +
               std::string(optarg));
         }
@@ -914,7 +914,7 @@ CLParser::parse_command_line(int argc, char** argv)
 #ifdef TRITON_ENABLE_GPU
           params_->shared_memory_type = SharedMemoryType::CUDA_SHARED_MEMORY;
 #else
-          usage("cuda shared memory is not supported when TRITON_ENABLE_GPU=0");
+          Usage("cuda shared memory is not supported when TRITON_ENABLE_GPU=0");
 #endif  // TRITON_ENABLE_GPU
         }
         break;
@@ -934,7 +934,7 @@ CLParser::parse_command_line(int argc, char** argv)
         } else if (arg.compare("triton_c_api") == 0) {
           params_->kind = cb::TRITON_C_API;
         } else {
-          usage("unsupported --service-kind specified");
+          Usage("unsupported --service-kind specified");
         }
         break;
       }
@@ -951,7 +951,7 @@ CLParser::parse_command_line(int argc, char** argv)
         } else if (arg.compare("gzip") == 0) {
           params_->compression_algorithm = cb::COMPRESS_GZIP;
         } else {
-          usage("unsupported --grpc-compression-algorithm specified");
+          Usage("unsupported --grpc-compression-algorithm specified");
         }
         break;
       }
@@ -962,7 +962,7 @@ CLParser::parse_command_line(int argc, char** argv)
         } else if (arg.compare("count_windows") == 0) {
           params_->measurement_mode = MeasurementMode::COUNT_WINDOWS;
         } else {
-          usage("unsupported --measurement-mode specified");
+          Usage("unsupported --measurement-mode specified");
         }
         break;
       }
@@ -986,7 +986,7 @@ CLParser::parse_command_line(int argc, char** argv)
           while (pos != std::string::npos) {
             size_t colon_pos = arg.find(":", pos);
             if (index > 1) {
-              usage(
+              Usage(
                   "option sequence-id-range can have maximum of two "
                   "elements");
             }
@@ -1009,7 +1009,7 @@ CLParser::parse_command_line(int argc, char** argv)
           }
         }
         catch (const std::invalid_argument& ia) {
-          usage("failed to parse concurrency range: " + std::string(optarg));
+          Usage("failed to parse concurrency range: " + std::string(optarg));
         }
         break;
       }
@@ -1021,7 +1021,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_grpc_root_certifications_file = optarg;
         } else {
-          usage(
+          Usage(
               "--ssl-grpc-root-certifications-file must be a valid file path");
         }
         break;
@@ -1030,7 +1030,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_grpc_private_key_file = optarg;
         } else {
-          usage("--ssl-grpc-private-key-file must be a valid file path");
+          Usage("--ssl-grpc-private-key-file must be a valid file path");
         }
         break;
       }
@@ -1038,7 +1038,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_grpc_certificate_chain_file = optarg;
         } else {
-          usage("--ssl-grpc-certificate-chain-file must be a valid file path");
+          Usage("--ssl-grpc-certificate-chain-file must be a valid file path");
         }
         break;
       }
@@ -1046,7 +1046,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (std::atol(optarg) == 0 || std::atol(optarg) == 1) {
           params_->ssl_options.ssl_https_verify_peer = std::atol(optarg);
         } else {
-          usage("--ssl-https-verify-peer must be 0 or 1");
+          Usage("--ssl-https-verify-peer must be 0 or 1");
         }
         break;
       }
@@ -1055,7 +1055,7 @@ CLParser::parse_command_line(int argc, char** argv)
             std::atol(optarg) == 2) {
           params_->ssl_options.ssl_https_verify_host = std::atol(optarg);
         } else {
-          usage("--ssl-https-verify-host must be 0, 1, or 2");
+          Usage("--ssl-https-verify-host must be 0, 1, or 2");
         }
         break;
       }
@@ -1063,7 +1063,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_https_ca_certificates_file = optarg;
         } else {
-          usage("--ssl-https-ca-certificates-file must be a valid file path");
+          Usage("--ssl-https-ca-certificates-file must be a valid file path");
         }
         break;
       }
@@ -1071,7 +1071,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_https_client_certificate_file = optarg;
         } else {
-          usage(
+          Usage(
               "--ssl-https-client-certificate-file must be a valid file path");
         }
         break;
@@ -1080,7 +1080,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (std::string(optarg) == "PEM" || std::string(optarg) == "DER") {
           params_->ssl_options.ssl_https_client_certificate_type = optarg;
         } else {
-          usage("--ssl-https-client-certificate-type must be 'PEM' or 'DER'");
+          Usage("--ssl-https-client-certificate-type must be 'PEM' or 'DER'");
         }
         break;
       }
@@ -1088,7 +1088,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (IsFile(optarg)) {
           params_->ssl_options.ssl_https_private_key_file = optarg;
         } else {
-          usage("--ssl-https-private-key-file must be a valid file path");
+          Usage("--ssl-https-private-key-file must be a valid file path");
         }
         break;
       }
@@ -1096,7 +1096,7 @@ CLParser::parse_command_line(int argc, char** argv)
         if (std::string(optarg) == "PEM" || std::string(optarg) == "DER") {
           params_->ssl_options.ssl_https_private_key_type = optarg;
         } else {
-          usage("--ssl-https-private-key-type must be 'PEM' or 'DER'");
+          Usage("--ssl-https-private-key-type must be 'PEM' or 'DER'");
         }
         break;
       }
@@ -1189,7 +1189,7 @@ CLParser::parse_command_line(int argc, char** argv)
         params_->async = true;
         break;
       case '?':
-        usage();
+        Usage();
         break;
     }
   }
@@ -1219,39 +1219,39 @@ CLParser::parse_command_line(int argc, char** argv)
 }
 
 void
-CLParser::verify_options()
+CLParser::VerifyOptions()
 {
   if (params_->model_name.empty()) {
-    usage("-m flag must be specified");
+    Usage("-m flag must be specified");
   }
   if (params_->batch_size <= 0) {
-    usage("batch size must be > 0");
+    Usage("batch size must be > 0");
   }
   if (params_->measurement_window_ms <= 0) {
-    usage("measurement window must be > 0 in msec");
+    Usage("measurement window must be > 0 in msec");
   }
   if (params_->measurement_request_count <= 0) {
-    usage("measurement request count must be > 0");
+    Usage("measurement request count must be > 0");
   }
   if (params_->concurrency_range.start <= 0 ||
       params_->concurrent_request_count < 0) {
-    usage("The start of the search range must be > 0");
+    Usage("The start of the search range must be > 0");
   }
   if (params_->request_rate_range[SEARCH_RANGE::kSTART] <= 0) {
-    usage("The start of the search range must be > 0");
+    Usage("The start of the search range must be > 0");
   }
   if (params_->protocol == cb::ProtocolType::UNKNOWN) {
-    usage("protocol should be either HTTP or gRPC");
+    Usage("protocol should be either HTTP or gRPC");
   }
   if (params_->streaming && (params_->protocol != cb::ProtocolType::GRPC)) {
-    usage("streaming is only allowed with gRPC protocol");
+    Usage("streaming is only allowed with gRPC protocol");
   }
   if (params_->using_grpc_compression &&
       (params_->protocol != cb::ProtocolType::GRPC)) {
-    usage("compression is only allowed with gRPC protocol");
+    Usage("compression is only allowed with gRPC protocol");
   }
   if (params_->max_threads == 0) {
-    usage("maximum number of threads must be > 0");
+    Usage("maximum number of threads must be > 0");
   }
   if (params_->sequence_length == 0) {
     params_->sequence_length = 20;
@@ -1267,17 +1267,17 @@ CLParser::verify_options()
   }
   if (params_->percentile != -1 &&
       (params_->percentile > 99 || params_->percentile < 1)) {
-    usage("percentile must be -1 for not reporting or in range (0, 100)");
+    Usage("percentile must be -1 for not reporting or in range (0, 100)");
   }
   if (params_->zero_input && !params_->user_data.empty()) {
-    usage("zero input can't be set when data directory is provided");
+    Usage("zero input can't be set when data directory is provided");
   }
   if (params_->async && params_->forced_sync) {
-    usage("Both --async and --sync can not be specified simultaneously.");
+    Usage("Both --async and --sync can not be specified simultaneously.");
   }
 
   if (params_->using_concurrency_range && params_->using_old_options) {
-    usage("can not use deprecated options with --concurrency-range");
+    Usage("can not use deprecated options with --concurrency-range");
   } else if (params_->using_old_options) {
     if (params_->dynamic_concurrency_mode) {
       params_->concurrency_range.end = params_->max_concurrency;
@@ -1286,11 +1286,11 @@ CLParser::verify_options()
   }
 
   if (params_->using_request_rate_range && params_->using_old_options) {
-    usage("can not use concurrency options with --request-rate-range");
+    Usage("can not use concurrency options with --request-rate-range");
   }
 
   if (params_->using_request_rate_range && params_->using_concurrency_range) {
-    usage(
+    Usage(
         "can not specify concurrency_range and request_rate_range "
         "simultaneously");
   }
@@ -1298,16 +1298,16 @@ CLParser::verify_options()
   if (params_->using_request_rate_range && params_->mpi_driver->IsMPIRun() &&
       (params_->request_rate_range[SEARCH_RANGE::kEND] != 1.0 ||
        params_->request_rate_range[SEARCH_RANGE::kSTEP] != 1.0)) {
-    usage("cannot use request rate range with multi-model mode");
+    Usage("cannot use request rate range with multi-model mode");
   }
 
   if (params_->using_custom_intervals && params_->using_old_options) {
-    usage("can not use deprecated options with --request-intervals");
+    Usage("can not use deprecated options with --request-intervals");
   }
 
   if ((params_->using_custom_intervals) &&
       (params_->using_request_rate_range || params_->using_concurrency_range)) {
-    usage(
+    Usage(
         "can not use --concurrency-range or --request-rate-range "
         "along with --request-intervals");
   }
@@ -1315,14 +1315,14 @@ CLParser::verify_options()
   if (params_->using_concurrency_range && params_->mpi_driver->IsMPIRun() &&
       (params_->concurrency_range.end != 1 ||
        params_->concurrency_range.step != 1)) {
-    usage("cannot use concurrency range with multi-model mode");
+    Usage("cannot use concurrency range with multi-model mode");
   }
 
   if (((params_->concurrency_range.end == NO_LIMIT) ||
        (params_->request_rate_range[SEARCH_RANGE::kEND] ==
         static_cast<double>(NO_LIMIT))) &&
       (params_->latency_threshold_ms == NO_LIMIT)) {
-    usage(
+    Usage(
         "The end of the search range and the latency limit can not be both 0 "
         "(or 0.0) simultaneously");
   }
@@ -1331,19 +1331,19 @@ CLParser::verify_options()
        (params_->request_rate_range[SEARCH_RANGE::kEND] ==
         static_cast<double>(NO_LIMIT))) &&
       (params_->search_mode == SearchMode::BINARY)) {
-    usage("The end of the range can not be 0 (or 0.0) for binary search mode.");
+    Usage("The end of the range can not be 0 (or 0.0) for binary search mode.");
   }
 
   if ((params_->search_mode == SearchMode::BINARY) &&
       (params_->latency_threshold_ms == NO_LIMIT)) {
-    usage("The latency threshold can not be 0 for binary search mode.");
+    Usage("The latency threshold can not be 0 for binary search mode.");
   }
 
   if (((params_->concurrency_range.end < params_->concurrency_range.start) ||
        (params_->request_rate_range[SEARCH_RANGE::kEND] <
         params_->request_rate_range[SEARCH_RANGE::kSTART])) &&
       (params_->search_mode == SearchMode::BINARY)) {
-    usage(
+    Usage(
         "The end of the range can not be less than start of the range for "
         "binary search mode.");
   }

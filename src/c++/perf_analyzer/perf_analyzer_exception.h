@@ -35,7 +35,7 @@ namespace triton { namespace perfanalyzer {
 //
 class PerfAnalyzerException : public std::exception {
  public:
-  PerfAnalyzerException(uint32_t error): error_(error) {}
+  PerfAnalyzerException(uint32_t error) : error_(error) {}
 
   virtual const char* what() const throw()
   {
@@ -43,12 +43,10 @@ class PerfAnalyzerException : public std::exception {
     return msg.c_str();
   }
 
-  inline int get_error() const {
-    return error_;
-  }
+  inline int GetError() const { return error_; }
 
  private:
-   uint32_t error_;
+  uint32_t error_;
 };
 
 }}  // namespace triton::perfanalyzer

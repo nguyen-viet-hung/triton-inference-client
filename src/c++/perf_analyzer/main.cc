@@ -34,13 +34,13 @@ main(int argc, char* argv[])
 {
   try {
     triton::perfanalyzer::CLParser clp;
-    pa::PAParamsPtr params = clp.parse(argc, argv);
+    pa::PAParamsPtr params = clp.Parse(argc, argv);
 
     PerfAnalyzer analyzer(params);
-    analyzer.run();
+    analyzer.Run();
   }
   catch (pa::PerfAnalyzerException& e) {
-    return e.get_error();
+    return e.GetError();
   }
 
   return 0;

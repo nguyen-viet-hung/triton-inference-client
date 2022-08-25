@@ -25,9 +25,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 #include <getopt.h>
-
 #include <array>
-
 #include "command_line_parser.h"
 #include "doctest.h"
 
@@ -272,14 +270,14 @@ TEST_CASE("Testing PerfAnalyzerParameters")
 //
 class TestCLParser : public CLParser {
  public:
-  std::string get_usage_message() const { return usage_message_; }
-  bool usage_called() const { return usage_called_; }
+  std::string GetUsageMessage() const { return usage_message_; }
+  bool UsageCalled() const { return usage_called_; }
 
  private:
   std::string usage_message_;
   bool usage_called_ = false;
 
-  virtual void usage(const std::string& msg = std::string())
+  virtual void Usage(const std::string& msg = std::string())
   {
     usage_called_ = true;
     usage_message_ = msg;
@@ -304,11 +302,10 @@ TEST_CASE("Testing Command Line Parser")
     int argc = 1;
     char* argv[argc] = {app_name};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    REQUIRE(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    REQUIRE(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
-        "-m flag must be specified");
+        "Usage Message", parser.GetUsageMessage(), "-m flag must be specified");
 
     exp->model_name = "";
     CHECK_PARAMS(act, exp);
@@ -321,8 +318,8 @@ TEST_CASE("Testing Command Line Parser")
     char* argv[argc] = {app_name, "-m", model_name};
 
     PAParamsPtr act;
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    REQUIRE(!parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    REQUIRE(!parser.UsageCalled());
 
     CHECK_PARAMS(act, exp);
     optind = 1;
@@ -335,10 +332,10 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 2;
       char* argv[argc] = {app_name, "--streaming"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "streaming is only allowed with gRPC protocol");
 
       exp->model_name = "";
@@ -353,14 +350,14 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 4;
       char* argv[argc] = {app_name, "-m", model_name, "--streaming"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(parser.UsageCalled());
 
       // NOTE: This is not an informative error message, how do I specify a gRPC
       // protocol? Error ouput should list missing params.
       //
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "streaming is only allowed with gRPC protocol");
 
       exp->streaming = true;
@@ -373,11 +370,11 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 4;
       char* argv[argc] = {app_name, "--streaming", "-m", model_name};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
 
-      REQUIRE(parser.usage_called());
+      REQUIRE(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "streaming is only allowed with gRPC protocol");
 
       exp->streaming = true;
@@ -393,8 +390,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "--max-threads", "1"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(!parser.UsageCalled());
 
       exp->max_threads = 1;
       exp->max_threads_specified = true;
@@ -407,8 +404,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "--max-threads", "65535"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(!parser.UsageCalled());
 
       exp->max_threads = 65535;
       exp->max_threads_specified = true;
@@ -421,12 +418,12 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 4;
       char* argv[argc] = {app_name, "-m", model_name, "--max-threads"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(parser.UsageCalled());
 
       // NOTE: Empty message is not helpful
       //
-      CHECK_STRING("Usage Message", parser.get_usage_message(), "");
+      CHECK_STRING("Usage Message", parser.GetUsageMessage(), "");
       // BUG: Dumping string "option '--max-threads' requires an argument"
       // directly to std::out, instead of through usage()
       //
@@ -440,12 +437,12 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 4;
       char* argv[argc] = {app_name, "-m", model_name, "--max-threads", "bad"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      REQUIRE(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      REQUIRE(parser.UsageCalled());
 
       // NOTE: Empty message is not helpful
       //
-      CHECK_STRING("Usage Message", parser.get_usage_message(), "");
+      CHECK_STRING("Usage Message", parser.GetUsageMessage(), "");
       // BUG: Dumping string "option '--max-threads' requires an argument"
       // directly to std::out, instead of through usage()
       //
@@ -460,11 +457,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to 2000")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--sequence-length", "2000"};
+      char* argv[argc] = {app_name, "-m", model_name, "--sequence-length",
+                          "2000"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->sequence_length = 2000;
       CHECK_PARAMS(act, exp);
@@ -479,8 +476,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "--percentile", "25"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->percentile = 25;
       CHECK_PARAMS(act, exp);
@@ -492,10 +489,10 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "--percentile", "225"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "percentile must be -1 for not reporting or in range (0, 100)");
 
       exp->percentile = 225;
@@ -508,8 +505,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "--percentile", "-1"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->percentile = -1;
       CHECK_PARAMS(act, exp);
@@ -522,11 +519,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to `/usr/data`")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--data-directory", "/usr/data"};
+      char* argv[argc] = {app_name, "-m", model_name, "--data-directory",
+                          "/usr/data"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->user_data.push_back("/usr/data");
       CHECK_PARAMS(act, exp);
@@ -544,8 +541,8 @@ TEST_CASE("Testing Command Line Parser")
                           "--data-directory", "/usr/data", "--data-directory",
                           "/another/dir"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->user_data.push_back("/usr/data");
       exp->user_data.push_back("/another/dir");
@@ -559,11 +556,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("expected input, single shape")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name:1,2,3"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name:1,2,3"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->input_shapes.emplace(
           std::string("input_name"), std::vector<int64_t>{1, 2, 3});
@@ -574,19 +571,18 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("expected input, multiple shapes")
     {
       int argc = 9;
-      char* argv[argc] = {
-          app_name,
-          "-m",
-          model_name,
-          "--shape",
-          "input_name:1,2,3",
-          "--shape",
-          "alpha:10,24",
-          "--shape",
-          "beta:10,200,34,15,9000"};
+      char* argv[argc] = {app_name,
+                          "-m",
+                          model_name,
+                          "--shape",
+                          "input_name:1,2,3",
+                          "--shape",
+                          "alpha:10,24",
+                          "--shape",
+                          "beta:10,200,34,15,9000"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->input_shapes.emplace(
           std::string("input_name"), std::vector<int64_t>{1, 2, 3});
@@ -601,14 +597,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("using negative dims")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name:-1,2,3"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name:-1,2,3"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
-          "input shape must be > 0");
+          "Usage Message", parser.GetUsageMessage(), "input shape must be > 0");
 
       exp->input_shapes.emplace(
           std::string("input_name"), std::vector<int64_t>{-1, 2, 3});
@@ -619,14 +614,14 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("equals sign, not colon")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name=-1,2,3"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name=-1,2,3"};
 
       // BUG this should call usages with the message
       // "failed to parse input shape. There must be a colon after input name
       //
       CHECK_THROWS_WITH(
-          act = parser.parse(argc, argv),
+          act = parser.Parse(argc, argv),
           "basic_string::substr: __pos (which is 18) > this->size() (which is "
           "17)");
 
@@ -642,7 +637,7 @@ TEST_CASE("Testing Command Line Parser")
       // "failed to parse input shape. There must be a colon after input name
       //
       CHECK_THROWS_WITH(
-          act = parser.parse(argc, argv),
+          act = parser.Parse(argc, argv),
           "basic_string::substr: __pos (which is 11) > this->size() (which is "
           "10)");
 
@@ -652,14 +647,14 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("missing colon")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name1,2,3"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name1,2,3"};
 
       // BUG this should call usages with the message
       // "failed to parse input shape. There must be a colon after input name
       //
       CHECK_THROWS_WITH(
-          act = parser.parse(argc, argv),
+          act = parser.Parse(argc, argv),
           "basic_string::substr: __pos (which is 16) > this->size() (which is "
           "15)");
 
@@ -669,13 +664,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("bad shapes - a,b,c")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name:a,b,c"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name:a,b,c"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "failed to parse input shape: input_name:a,b,c");
 
       exp->input_shapes.emplace(
@@ -687,13 +682,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("bad shapes - [1,2,3]")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--shape", "input_name:[1,2,3]"};
+      char* argv[argc] = {app_name, "-m", model_name, "--shape",
+                          "input_name:[1,2,3]"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "failed to parse input shape: input_name:[1,2,3]");
 
       exp->input_shapes.emplace(
@@ -708,11 +703,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to 500")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--measurement-interval", "500"};
+      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
+                          "500"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->measurement_window_ms = 500;
       CHECK_PARAMS(act, exp);
@@ -722,11 +717,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to -200")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--measurement-interval", "-200"};
+      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
+                          "-200"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       // BUG: may want to actually error out here, and not just use the unsigned
       // conversion. This will result in unexpected behavior. The actual value
@@ -740,13 +735,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to non-numeric value")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--measurement-interval", "foobar"};
+      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
+                          "foobar"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "measurement window must be > 0 in msec");
 
       exp->measurement_window_ms = 0;
@@ -764,8 +759,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "-p", "500"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->measurement_window_ms = 500;
       CHECK_PARAMS(act, exp);
@@ -777,8 +772,8 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "-p", "-200"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       // BUG: may want to actually error out here, and not just use the
       // unsigned conversion. This will result in unexpected behavior. The
@@ -795,10 +790,10 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 5;
       char* argv[argc] = {app_name, "-m", model_name, "-p", "foobar"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
       CHECK_STRING(
-          "Usage Message", parser.get_usage_message(),
+          "Usage Message", parser.GetUsageMessage(),
           "measurement window must be > 0 in msec");
 
       exp->measurement_window_ms = 0;
@@ -812,11 +807,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("expected use")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--concurrency-range", "100:400:10"};
+      char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                          "100:400:10"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->using_concurrency_range = true;
       exp->concurrency_range.start = 100;
@@ -829,11 +824,11 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("only two options")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--concurrency-range", "100:400"};
+      char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                          "100:400"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->using_concurrency_range = true;
       exp->concurrency_range.start = 100;
@@ -845,13 +840,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("only one options")
     {
       int argc = 5;
-      char* argv[argc] = {
-          app_name, "-m", model_name, "--concurrency-range", "100"};
+      char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                          "100"};
 
       // QUESTION: What does this mean? Why pass only one?
       //
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(!parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(!parser.UsageCalled());
 
       exp->using_concurrency_range = true;
       exp->concurrency_range.start = 100;
@@ -864,14 +859,14 @@ TEST_CASE("Testing Command Line Parser")
       int argc = 4;
       char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range"};
 
-      REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-      CHECK(parser.usage_called());
+      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+      CHECK(parser.UsageCalled());
 
       // BUG: Usage message does not contain error. Error statement
       // "option '--concurrency-range' requires an argument" written directly
       // to std::out
       //
-      CHECK_STRING("Usage Message", parser.get_usage_message(), "");
+      CHECK_STRING("Usage Message", parser.GetUsageMessage(), "");
 
       CHECK_PARAMS(act, exp);
       optind = 1;
@@ -881,13 +876,13 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("too many options")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range", "200:100:25:10"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "200:100:25:10"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "option concurrency-range can have maximum of three elements");
 
     exp->using_concurrency_range = true;
@@ -901,14 +896,13 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("way too many options")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range",
-        "200:100:25:10:20:30"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "200:100:25:10:20:30"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "option concurrency-range can have maximum of three elements");
 
     exp->using_concurrency_range = true;
@@ -922,11 +916,11 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("wrong separator")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range", "100,400,10"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "100,400,10"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(!parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(!parser.UsageCalled());
 
     // BUG: Should detect this and through an error. User will enter this and
     // have no clue why the end and step sizes are not used correctly.
@@ -941,13 +935,13 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("bad start value")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range", "bad:400:10"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "bad:400:10"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "failed to parse concurrency range: bad:400:10");
 
     exp->using_concurrency_range = true;
@@ -958,13 +952,13 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("bad end value")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range", "100:bad:10"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "100:bad:10"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "failed to parse concurrency range: 100:bad:10");
 
     exp->using_concurrency_range = true;
@@ -976,13 +970,13 @@ TEST_CASE("Testing Command Line Parser")
   SUBCASE("bad step value")
   {
     int argc = 5;
-    char* argv[argc] = {
-        app_name, "-m", model_name, "--concurrency-range", "100:400:bad"};
+    char* argv[argc] = {app_name, "-m", model_name, "--concurrency-range",
+                        "100:400:bad"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "failed to parse concurrency range: 100:400:bad");
 
     exp->using_concurrency_range = true;
@@ -1000,10 +994,10 @@ TEST_CASE("Testing Command Line Parser")
                         "100:0:25", "--latency-threshold",
                         "0"};
 
-    REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-    CHECK(parser.usage_called());
+    REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+    CHECK(parser.UsageCalled());
     CHECK_STRING(
-        "Usage Message", parser.get_usage_message(),
+        "Usage Message", parser.GetUsageMessage(),
         "The end of the search range and the latency limit can not be both 0 "
         "(or 0.0) simultaneously");
 
@@ -1026,10 +1020,10 @@ TEST_CASE("Testing Command Line Parser")
   //                       "100:0:25", "--async",
   //                       "0"};
 
-  //   REQUIRE_NOTHROW(act = parser.parse(argc, argv));
-  //   CHECK(parser.usage_called());
+  //   REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
+  //   CHECK(parser.UsageCalled());
   //   CHECK_STRING(
-  //       "Usage Message", parser.get_usage_message(),
+  //       "Usage Message", parser.GetUsageMessage(),
   //       "The end of the search range and the latency limit can not be both 0
   //       "
   //       "(or 0.0) simultaneously");

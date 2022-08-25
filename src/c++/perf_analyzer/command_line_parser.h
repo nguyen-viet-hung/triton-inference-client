@@ -30,7 +30,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "constants.h"
 #include "mpi_utils.h"
 #include "perf_utils.h"
@@ -126,16 +125,16 @@ class CLParser {
 
   // Parse command line arguements into a parameters struct
   //
-  PAParamsPtr parse(int argc, char** argv);
+  PAParamsPtr Parse(int argc, char** argv);
 
  private:
   char** argv_;
   int argc_;
   PAParamsPtr params_;
 
-  std::string format_message(std::string str, int offset) const;
-  virtual void usage(const std::string& msg = std::string());
-  void parse_command_line(int argc, char** argv);
-  void verify_options();
+  std::string FormatMessage(std::string str, int offset) const;
+  virtual void Usage(const std::string& msg = std::string());
+  void ParseCommandLine(int argc, char** argv);
+  void VerifyOptions();
 };
 }}  // namespace triton::perfanalyzer

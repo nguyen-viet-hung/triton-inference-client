@@ -55,20 +55,20 @@ SignalHandler(int signum)
 
 PerfAnalyzer::PerfAnalyzer(pa::PAParamsPtr params) : params_(params)
 {
-  create_analyzer_objects();
+  CreateAnalyzerObjects();
 }
 
 void
-PerfAnalyzer::run()
+PerfAnalyzer::Run()
 {
-  prerun_report();
-  profile();
-  write_report();
-  finalize();
+  PrerunReport();
+  Profile();
+  WriteReport();
+  Finalize();
 }
 
 void
-PerfAnalyzer::create_analyzer_objects()
+PerfAnalyzer::CreateAnalyzerObjects()
 {
   // trap SIGINT to allow threads to exit gracefully
   signal(SIGINT, pa::SignalHandler);
@@ -83,42 +83,42 @@ PerfAnalyzer::create_analyzer_objects()
       "failed to create client factory");
 
   FAIL_IF_ERR(
-      factory->CreateClientBackend(&backend),
+      factory->CreateClientBackend(&backend_),
       "failed to create triton client backend");
 
-  parser = std::make_shared<pa::ModelParser>(params_->kind);
+  parser_ = std::make_shared<pa::ModelParser>(params_->kind);
   if (params_->kind == cb::BackendKind::TRITON ||
       params_->kind == cb::BackendKind::TRITON_C_API) {
     rapidjson::Document model_metadata;
     FAIL_IF_ERR(
-        backend->ModelMetadata(
+        backend_->ModelMetadata(
             &model_metadata, params_->model_name, params_->model_version),
         "failed to get model metadata");
     rapidjson::Document model_config;
     FAIL_IF_ERR(
-        backend->ModelConfig(
+        backend_->ModelConfig(
             &model_config, params_->model_name, params_->model_version),
         "failed to get model config");
     FAIL_IF_ERR(
-        parser->InitTriton(
+        parser_->InitTriton(
             model_metadata, model_config, params_->model_version,
-            params_->input_shapes, backend),
+            params_->input_shapes, backend_),
         "failed to create model parser");
   } else if (params_->kind == cb::BackendKind::TENSORFLOW_SERVING) {
     rapidjson::Document model_metadata;
     FAIL_IF_ERR(
-        backend->ModelMetadata(
+        backend_->ModelMetadata(
             &model_metadata, params_->model_name, params_->model_version),
         "failed to get model metadata");
     FAIL_IF_ERR(
-        parser->InitTFServe(
+        parser_->InitTFServe(
             model_metadata, params_->model_name, params_->model_version,
             params_->model_signature_name, params_->batch_size,
-            params_->input_shapes, backend),
+            params_->input_shapes, backend_),
         "failed to create model parser");
   } else if (params_->kind == cb::BackendKind::TORCHSERVE) {
     FAIL_IF_ERR(
-        parser->InitTorchServe(
+        parser_->InitTorchServe(
             params_->model_name, params_->model_version, params_->batch_size),
         "failed to create model parser");
   } else {
@@ -126,7 +126,7 @@ PerfAnalyzer::create_analyzer_objects()
     throw pa::PerfAnalyzerException(pa::GENERIC_ERROR);
   }
 
-  if ((parser->MaxBatchSize() == 0) && params_->batch_size > 1) {
+  if ((parser_->MaxBatchSize() == 0) && params_->batch_size > 1) {
     std::cerr << "can not specify batch size > 1 as the model does not support "
                  "batching"
               << std::endl;
@@ -134,8 +134,8 @@ PerfAnalyzer::create_analyzer_objects()
   }
 
   // Change the default value for the --async option for sequential models
-  if ((parser->SchedulerType() == pa::ModelParser::SEQUENCE) ||
-      (parser->SchedulerType() == pa::ModelParser::ENSEMBLE_SEQUENCE)) {
+  if ((parser_->SchedulerType() == pa::ModelParser::SEQUENCE) ||
+      (parser_->SchedulerType() == pa::ModelParser::ENSEMBLE_SEQUENCE)) {
     if (!params_->async) {
       params_->async = params_->forced_sync ? false : true;
     }
@@ -158,8 +158,8 @@ PerfAnalyzer::create_analyzer_objects()
   std::unique_ptr<pa::LoadManager> manager;
 
   if (params_->targeting_concurrency()) {
-    if ((parser->SchedulerType() == pa::ModelParser::SEQUENCE) ||
-        (parser->SchedulerType() == pa::ModelParser::ENSEMBLE_SEQUENCE)) {
+    if ((parser_->SchedulerType() == pa::ModelParser::SEQUENCE) ||
+        (parser_->SchedulerType() == pa::ModelParser::ENSEMBLE_SEQUENCE)) {
       if (params_->concurrency_range.end == pa::NO_LIMIT && params_->async) {
         std::cerr << "The 'end' concurrency can not be 0 for sequence "
                      "models when using asynchronous API."
@@ -205,7 +205,7 @@ PerfAnalyzer::create_analyzer_objects()
             params_->sequence_length, params_->string_length,
             params_->string_data, params_->zero_input, params_->user_data,
             params_->shared_memory_type, params_->output_shm_size,
-            params_->start_sequence_id, params_->sequence_id_range, parser,
+            params_->start_sequence_id, params_->sequence_id_range, parser_,
             factory, &manager),
         "failed to create concurrency manager");
 
@@ -226,7 +226,7 @@ PerfAnalyzer::create_analyzer_objects()
             params_->sequence_length, params_->string_length,
             params_->string_data, params_->zero_input, params_->user_data,
             params_->shared_memory_type, params_->output_shm_size,
-            params_->start_sequence_id, params_->sequence_id_range, parser,
+            params_->start_sequence_id, params_->sequence_id_range, parser_,
             factory, &manager),
         "failed to create request rate manager");
 
@@ -247,7 +247,7 @@ PerfAnalyzer::create_analyzer_objects()
             params_->sequence_length, params_->string_length,
             params_->string_data, params_->zero_input, params_->user_data,
             params_->shared_memory_type, params_->output_shm_size,
-            params_->start_sequence_id, params_->sequence_id_range, parser,
+            params_->start_sequence_id, params_->sequence_id_range, parser_,
             factory, &manager),
         "failed to create custom load manager");
   }
@@ -257,14 +257,14 @@ PerfAnalyzer::create_analyzer_objects()
           params_->verbose, params_->stability_threshold,
           params_->measurement_window_ms, params_->max_trials,
           params_->percentile, params_->latency_threshold_ms, params_->protocol,
-          parser, std::move(backend), std::move(manager), &profiler,
+          parser_, std::move(backend_), std::move(manager), &profiler_,
           params_->measurement_request_count, params_->measurement_mode,
           params_->mpi_driver),
       "failed to create profiler");
 }
 
 void
-PerfAnalyzer::prerun_report()
+PerfAnalyzer::PrerunReport()
 {
   std::cout << "*** Measurement Settings ***" << std::endl;
   if (params_->kind == cb::BackendKind::TRITON || params_->using_batch_size) {
@@ -323,7 +323,7 @@ PerfAnalyzer::prerun_report()
   } else {
     std::cout << "  Using synchronous calls for inference" << std::endl;
   }
-  if (parser->IsDecoupled()) {
+  if (parser_->IsDecoupled()) {
     std::cout << "  Detected decoupled model, using the first response for "
                  "measuring latency"
               << std::endl;
@@ -339,21 +339,21 @@ PerfAnalyzer::prerun_report()
 }
 
 void
-PerfAnalyzer::profile()
+PerfAnalyzer::Profile()
 {
   params_->mpi_driver->MPIBarrierWorld();
 
   cb::Error err;
   if (params_->targeting_concurrency()) {
-    err = profiler->Profile<size_t>(
+    err = profiler_->Profile<size_t>(
         params_->concurrency_range.start, params_->concurrency_range.end,
-        params_->concurrency_range.step, params_->search_mode, summary);
+        params_->concurrency_range.step, params_->search_mode, summary_);
   } else {
-    err = profiler->Profile<double>(
+    err = profiler_->Profile<double>(
         params_->request_rate_range[pa::SEARCH_RANGE::kSTART],
         params_->request_rate_range[pa::SEARCH_RANGE::kEND],
         params_->request_rate_range[pa::SEARCH_RANGE::kSTEP],
-        params_->search_mode, summary);
+        params_->search_mode, summary_);
   }
 
   params_->mpi_driver->MPIBarrierWorld();
@@ -369,9 +369,9 @@ PerfAnalyzer::profile()
 }
 
 void
-PerfAnalyzer::write_report()
+PerfAnalyzer::WriteReport()
 {
-  if (!summary.size()) {
+  if (!summary_.size()) {
     return;
   }
 
@@ -383,7 +383,7 @@ PerfAnalyzer::write_report()
     std::cout << "p" << params_->percentile << " Batch Latency" << std::endl;
   }
 
-  for (pa::PerfStatus& status : summary) {
+  for (pa::PerfStatus& status : summary_) {
     if (params_->targeting_concurrency()) {
       std::cout << "Concurrency: " << status.concurrency << ", ";
     } else {
@@ -398,16 +398,16 @@ PerfAnalyzer::write_report()
 
   FAIL_IF_ERR(
       pa::ReportWriter::Create(
-          params_->filename, params_->targeting_concurrency(), summary,
-          params_->verbose_csv, profiler->IncludeServerStats(),
-          params_->percentile, parser, &writer),
+          params_->filename, params_->targeting_concurrency(), summary_,
+          params_->verbose_csv, profiler_->IncludeServerStats(),
+          params_->percentile, parser_, &writer),
       "failed to create report writer");
 
   writer->GenerateReport();
 }
 
 void
-PerfAnalyzer::finalize()
+PerfAnalyzer::Finalize()
 {
   params_->mpi_driver->MPIFinalize();
 }
