@@ -138,6 +138,12 @@ ClientBackendFactory::CreateClientBackend(
   return Error::Success;
 }
 
+const BackendKind&
+ClientBackendFactory::Kind()
+{
+  return kind_;
+}
+
 //
 // ClientBackend
 //
@@ -315,6 +321,16 @@ ClientBackend::RegisterCudaSharedMemory(
 Error
 ClientBackend::RegisterCudaMemory(
     const std::string& name, void* handle, const size_t byte_size)
+{
+  return Error(
+      "client backend of kind " + BackendKindToString(kind_) +
+          " does not support RegisterCudaMemory API",
+      pa::GENERIC_ERROR);
+}
+
+Error
+ClientBackend::RegisterSystemMemory(
+    const std::string& name, void* memory_ptr, const size_t byte_size)
 {
   return Error(
       "client backend of kind " + BackendKindToString(kind_) +

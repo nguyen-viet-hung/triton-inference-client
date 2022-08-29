@@ -1606,10 +1606,6 @@ PerfAnalyzer::Run(int argc, char** argv)
     if (!target_concurrency) {
       std::cerr << "Only target concurrency is supported by C API" << std::endl;
       return pa::GENERIC_ERROR;
-    } else if (shared_memory_type == pa::SYSTEM_SHARED_MEMORY) {
-      std::cerr << "System shared memory is not supported by C-API."
-                << std::endl;
-      return pa::GENERIC_ERROR;
     } else if (triton_server_path.empty() || model_repository_path.empty()) {
       std::cerr
           << "Not enough information to create C API. /lib/libtritonserver.so "
