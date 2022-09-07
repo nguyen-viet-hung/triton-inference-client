@@ -703,8 +703,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to 500")
     {
       int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
-                          "500"};
+      char* argv[argc] = {app_name, "-m", model_name, "", "500"};
+
+      SUBCASE("Long form") { argv[3] = "--measurement-interval"; }
+
+      SUBCASE("Short form") { argv[3] = "-p"; }
+
+      CAPTURE(argv[3]);
 
       REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
       CHECK(!parser.UsageCalled());
@@ -717,8 +722,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to -200")
     {
       int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
-                          "-200"};
+      char* argv[argc] = {app_name, "-m", model_name, "", "-200"};
+
+      SUBCASE("Long form") { argv[3] = "--measurement-interval"; }
+
+      SUBCASE("Short form") { argv[3] = "-p"; }
+
+      CAPTURE(argv[3]);
 
       REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
       CHECK(!parser.UsageCalled());
@@ -735,60 +745,13 @@ TEST_CASE("Testing Command Line Parser")
     SUBCASE("set to non-numeric value")
     {
       int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "--measurement-interval",
-                          "foobar"};
+      char* argv[argc] = {app_name, "-m", model_name, "", "foobar"};
 
-      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
-      CHECK(parser.UsageCalled());
-      CHECK_STRING(
-          "Usage Message", parser.GetUsageMessage(),
-          "measurement window must be > 0 in msec");
+      SUBCASE("Long form") { argv[3] = "--measurement-interval"; }
 
-      exp->measurement_window_ms = 0;
-      CHECK_PARAMS(act, exp);
-      optind = 1;
-    }
-  }
+      SUBCASE("Short form") { argv[3] = "-p"; }
 
-  // Short hand version of --measurement-interval, all test should be the same
-  //
-  SUBCASE("Option : -p")
-  {
-    SUBCASE("set to 500")
-    {
-      int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "-p", "500"};
-
-      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
-      CHECK(!parser.UsageCalled());
-
-      exp->measurement_window_ms = 500;
-      CHECK_PARAMS(act, exp);
-      optind = 1;
-    }
-
-    SUBCASE("set to -200")
-    {
-      int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "-p", "-200"};
-
-      REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
-      CHECK(!parser.UsageCalled());
-
-      // BUG: may want to actually error out here, and not just use the
-      // unsigned conversion. This will result in unexpected behavior. The
-      // actual value becomes 18446744073709551416ULL, which is not what you
-      // would want.
-      //
-      exp->measurement_window_ms = -200;
-      CHECK_PARAMS(act, exp);
-      optind = 1;
-    }
-
-    SUBCASE("set to non-numeric value")
-    {
-      int argc = 5;
-      char* argv[argc] = {app_name, "-m", model_name, "-p", "foobar"};
+      CAPTURE(argv[3]);
 
       REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
       CHECK(parser.UsageCalled());
