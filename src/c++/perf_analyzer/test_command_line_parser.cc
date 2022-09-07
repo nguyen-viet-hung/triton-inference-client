@@ -972,32 +972,5 @@ TEST_CASE("Testing Command Line Parser")
     CHECK_PARAMS(act, exp);
     optind = 1;
   }
-
-  // TODO figure out how to setup an asynchronous sequence model
-  //
-  // SUBCASE("invalid condition - end is 0 for asynchronous sequence models")
-  // {
-  //   int argc = 7;
-  //   char* argv[argc] = {app_name,   "-m",
-  //                       model_name, "--concurrency-range",
-  //                       "100:0:25", "--async",
-  //                       "0"};
-
-  //   REQUIRE_NOTHROW(act = parser.Parse(argc, argv));
-  //   CHECK(parser.UsageCalled());
-  //   CHECK_STRING(
-  //       "Usage Message", parser.GetUsageMessage(),
-  //       "The end of the search range and the latency limit can not be both 0
-  //       "
-  //       "(or 0.0) simultaneously");
-
-  //   exp->using_concurrency_range = true;
-  //   exp->concurrency_range.start = 100;
-  //   exp->concurrency_range.end = 0;
-  //   exp->concurrency_range.step = 25;
-  //   exp->latency_threshold_ms = 0;
-  //   CHECK_PARAMS(act, exp);
-  //   optind = 1;
-  // }
 }
 }}  // namespace triton::perfanalyzer
