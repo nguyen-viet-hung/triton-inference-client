@@ -145,6 +145,9 @@ add_executable(
   $<TARGET_OBJECTS:json-utils-library>
 )
 
+# -Wno-write-strings is needed for the unit tests in order to statically create
+# input argv cases in the CommandLineParser unit test
+#
 set_target_properties(perf_analyzer_unit_tests 
   PROPERTIES COMPILE_FLAGS "-Wno-write-strings")
 
